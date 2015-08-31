@@ -76,7 +76,8 @@ void ReSizeGLScene(int Width, int Height)
 }
 
 
-GLfloat g_lookat_x=0;
+Vector3 camera_pos;
+
 
 /* The main drawing function. */
 void DrawGLScene()
@@ -85,25 +86,53 @@ void DrawGLScene()
   glLoadIdentity();				// Reset The View
 
 float cm_ogl[16];
-Matrix4 cm;
+Matrix4 rot;
 
+//yrot+=1.f;
+rot.rotateY(yrot);
+{
+printf("cm rotate:\n");
+printf("%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n",
+rot[0], rot[1], rot[2], rot[3],
+rot[4], rot[5], rot[6], rot[7],
+rot[8], rot[9], rot[10], rot[11],
+rot[12], rot[13], rot[14], rot[15]);
 
-cm.identity();
-cm.rotateY(90);
-cm.invert();
-ToOpenGLMat(cm,cm_ogl);
+}
 
+camera_pos.y=1;
+Matrix4 tr;
+tr.translate(camera_pos.x,camera_pos.y,camera_pos.z);
 
-cm.identity();
-cm.rotateY(180);
-cm.invert();
-ToOpenGLMat(cm,cm_ogl);
+Matrix4 rottr=rot * tr;
+
+{
+printf("rottr:\n");
+printf("%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n",
+rottr[0], rottr[1], rottr[2], rottr[3],
+rottr[4], rottr[5], rottr[6], rottr[7],
+rottr[8], rottr[9], rottr[10], rottr[11],
+rottr[12], rottr[13], rottr[14], rottr[15]);
+
+}
+rottr.invert();
+ToOpenGLMat(rottr,cm_ogl);
+
 
 
 
 glLoadMatrixf(cm_ogl);
 
 
+
+DisplayGrid();
+DisplayAxis();
 
 glPushMatrix();
 
@@ -166,7 +195,7 @@ printf("%+.2f,%+.2f,%+.2f,%+.2f \n\
 %+.2f,%+.2f,%+.2f,%+.2f \n",
 view[0], view[4], view[8], view[3],
 view[1], view[5], view[9], view[7],
-view[8], view[6], view[10], view[11],
+view[2], view[6], view[10], view[11],
 view[12], view[13], view[14], view[15]);
 
 }
@@ -240,19 +269,22 @@ void specialKeyPressed(int key, int x, int y)
 	break;
 
     case GLUT_KEY_UP: // walk forward (bob head)
+	++camera_pos.z;
 	break;
 
     case GLUT_KEY_DOWN: // walk back (bob head)
+	//if(camera_pos.z>0)
+		--camera_pos.z;
 	break;
 
     case GLUT_KEY_LEFT: // look left
 	yrot += 1.5f;
-	++g_lookat_x;
+//	++g_lookat_x;
 	break;
     
     case GLUT_KEY_RIGHT: // look right
 	yrot -= 1.5f;
-	--g_lookat_x;
+	//--g_lookat_x;
 	break;
 
     default:
