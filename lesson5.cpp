@@ -14,6 +14,12 @@
 #include <stdio.h>     // needed to sleep
 #include <math.h>     // needed to sleep
 #include "objects.h"
+
+#include "soho/Matrices.h"
+#include "utils.h"
+
+
+
 /* ASCII code for the escape key. */
 #define ESCAPE 27
 
@@ -70,8 +76,6 @@ void ReSizeGLScene(int Width, int Height)
 }
 
 
-
-GLfloat g_sceneroty=360;
 GLfloat g_lookat_x=0;
 
 /* The main drawing function. */
@@ -80,89 +84,26 @@ void DrawGLScene()
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);	// Clear The Screen And The Depth Buffer
   glLoadIdentity();				// Reset The View
 
-
-/*
-i want to make up my view matrix using the description of the local axis in the world coordinates.
-but i am worried that the default view matrix will interfere with my view matrix. this would mean that i need to take the default one into consideration when making my view matrix.
-before proceeding in taking it into account. let me do a test:
-i make my view matrix and see what happens.
-i make sure that my view matrix is well retrieved by glGetDoublev(GL_MODELVIEW_MATRIX, view);
-
-	gluLookAt(
-		0,0,0,
-		0,0,-1,
-		0,1,0		
-			);
-*/
-//test1 : place the camera coicifding with the world. expected result:no objects drawn.
-//test2 : rotate the camera PI. expected result:objects drawn.
-//test1
-float angle = M_PI;
-float c=cos(angle);
-float s=sin(angle);
-glRotatef(M_PI,0.0f,1.0f,0.0f); //-> until here, this code has no effect on the view matrix ! it is always identity no matter what the angle (12)
-/*
-branch 1 from (12)
-get current matrix; //can't get it. no API! go for branch 2.
-inverse it;
-push it; //that's my view matrix
-make sure it is returned by glGetDoublev(GL_MODELVIEW_MATRIX, view);
-*/
-/*
-branch 2 from (12)
-load a new matrix having the desired values; //that's my view matrix
-make sure it is returned by glGetDoublev(GL_MODELVIEW_MATRIX, view);
-*/
-
-/*
-the default vm has the following local coordinates:
-y=0,1,0
-z=0,0,-1
-x=y cross z 
-*/
-float vm_look_at_the_positive_world_z[]=
-{
-c,0,s,0, //column 1+pos.x
-0,1,0,0, 
--s,0,c,0, 
-0,0,0,1 
-};
-angle = -M_PI/2;
-c=cos(angle);
-s=sin(angle);
-float vm_look_at_the_positive_world_x[]=
-{
-c,0,s,0, //column 1+pos.x
-0,1,0,0, 
--s,0,c,0, 
-0,0,0,1 
-};
+float cm_ogl[16];
+Matrix4 cm;
 
 
-angle = M_PI/2;
-c=cos(angle);
-s=sin(angle);
-float vm_look_at_the_negative_world_x[]=
-{
-c,0,s,0, //column 1+pos.x
-0,1,0,0, 
--s,0,c,0, 
-0,0,0,1 
-};
-
-angle = 0;
-c=cos(angle);
-s=sin(angle);
-float vm_look_at_the_negative_world_z[]=
-{
-c,0,s,0, //column 1+pos.x
-0,1,0,0, 
--s,0,c,0, 
-0,0,0,1 
-};
+cm.identity();
+cm.rotateY(90);
+cm.invert();
+ToOpenGLMat(cm,cm_ogl);
 
 
-glLoadMatrixf(vm_look_at_the_negative_world_x);
+cm.identity();
+cm.rotateY(180);
+cm.invert();
+ToOpenGLMat(cm,cm_ogl);
+
+
+
+glLoadMatrixf(cm_ogl);
+
+
 
 glPushMatrix();
 
@@ -223,9 +164,9 @@ printf("%+.2f,%+.2f,%+.2f,%+.2f \n\
 %+.2f,%+.2f,%+.2f,%+.2f \n\
 %+.2f,%+.2f,%+.2f,%+.2f \n\
 %+.2f,%+.2f,%+.2f,%+.2f \n",
-view[0], view[1], view[2], view[3],
-view[4], view[5], view[6], view[7],
-view[8], view[9], view[10], view[11],
+view[0], view[4], view[8], view[3],
+view[1], view[5], view[9], view[7],
+view[8], view[6], view[10], view[11],
 view[12], view[13], view[14], view[15]);
 
 }

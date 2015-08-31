@@ -10,7 +10,7 @@ LIBRARIES = -lX11 -lXi -lXmu -lglut -lGL -lGLU -lm
 
 OUT_EXE=a
 
-FILES=lesson5.cpp objects.cpp
+FILES=lesson5.cpp objects.cpp soho/Matrices.cpp utils.cpp
 build: $(FILES)
 	$(CC) $(HBDBG) $(INCLUDE) $(LIBDIR) $(FILES) -o $(OUT_EXE) $(LIBRARIES)
 
