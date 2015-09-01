@@ -131,8 +131,8 @@ glLoadMatrixf(cm_ogl);
 
 
 
-DisplayGrid();
-DisplayAxis();
+DrawGrid();
+DrawAxis();
 
 glPushMatrix();
 
@@ -204,6 +204,280 @@ view[12], view[13], view[14], view[15]);
   glutSwapBuffers();
 }
 
+Pyramid pyramid(draw_pyramid, 1.2f, Vector3(-3.f, 0.0f, -26.0f));
+Cube cube(draw_cube, 1.15f, Vector3(1.5f, 0.0f, -26.0f));
+
+void update3(void)   // Create The update Function
+{
+
+  pyramid.update();
+ // cube.update();
+
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear Screen And Depth Buffer
+  glLoadIdentity();					// Reset The Current Modelview Matrix
+
+gluLookAt(0,0,0, 0,0,-1, 0,1,0);  
+
+  DrawGrid();
+
+  pyramid.draw();
+  //cube.draw();
+
+  DrawAxis();
+
+  
+
+  glutSwapBuffers();
+  // Swap The Buffers To Not Be Left With A Clear Screen
+}
+
+void update4()
+{
+  glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);	// Clear The Screen And The Depth Buffer
+  glLoadIdentity();				// Reset The View
+
+float cm_ogl[16];
+Matrix4 cm;
+
+/*
+cm.identity();
+cm.rotateY(180);
+cm.invert();
+ToOpenGLMat(cm,cm_ogl);
+
+cm.identity();
+cm.rotateY(90);
+cm.invert();
+ToOpenGLMat(cm,cm_ogl);
+
+
+
+
+glLoadMatrixf(cm_ogl);
+*/
+
+
+glPushMatrix();
+/*
+cm.identity();
+cm.rotateY(rtri);
+cm.translate(Vector3(-1.5f,0.0f,-12.0f));
+ToOpenGLMat(cm,cm_ogl);
+
+glLoadMatrixf(cm_ogl);
+*/
+GLfloat tr[16];
+GLfloat rot[16];
+  glTranslatef2(-1.5f,0.0f,-12.0f,tr);		// Move Left 1.5 Units And Into The Screen 6.0
+glMultMatrixf(tr);
+  glRotatef2(rtri,0.0f,1.0f,0.0f,rot);		// Rotate The Pyramid On The Y axis
+glMultMatrixf(rot);
+//glRotatef(rtri,0.0f,1.0f,0.0f);		
+	
+draw_pyramid();
+
+glPopMatrix();
+
+
+glPushMatrix();
+
+  glTranslatef(0.f,0.f,12.0f);		// Move Left 1.5 Units And Into The Screen 6.0
+  glRotatef(rtri,0.0f,1.0f,0.0f);		// Rotate The Pyramid On The Y axis 
+	
+blue_draw_pyramid();
+
+glPopMatrix();
+
+
+glPushMatrix();
+
+  glTranslatef(12.f,0.f,0.0f);		// Move Left 1.5 Units And Into The Screen 6.0
+  glRotatef(rtri,0.0f,1.0f,0.0f);		// Rotate The Pyramid On The Y axis 
+	
+red_draw_pyramid();
+
+glPopMatrix();
+
+
+glPushMatrix();
+
+  glTranslatef(-12.f,0.f,0.0f);		// Move Left 1.5 Units And Into The Screen 6.0
+  glRotatef(rtri,0.0f,1.0f,0.0f);		// Rotate The Pyramid On The Y axis 
+	
+green_draw_pyramid();
+
+glPopMatrix();
+
+glPushMatrix();
+
+  glTranslatef(1.5f,0.0f,-12.0f);		// Move Right 3 Units, and back into the screen 7
+  glRotatef(rquad,1.0f,1.0f,1.0f);		// Rotate The Cube On X, Y, and Z
+
+  draw_cube();
+glPopMatrix();
+
+  rtri+=1.0f;					// Increase The Rotation Variable For The Pyramid
+  rquad-=1.0f;					// Decrease The Rotation Variable For The Cube
+
+GLdouble view[16];
+glGetDoublev(GL_MODELVIEW_MATRIX, view);
+
+{
+printf("view:\n");
+printf("%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n",
+view[0], view[4], view[8], view[3],
+view[1], view[5], view[9], view[7],
+view[8], view[6], view[10], view[11],
+view[12], view[13], view[14], view[15]);
+
+}
+
+  // swap the buffers to display, since double buffering is used.
+  glutSwapBuffers();
+}
+
+float cam_angle=0;
+Vector3 camera_pos_0;
+float cam_angle_0=0;
+
+void update5()
+{
+  glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);	// Clear The Screen And The Depth Buffer
+  glLoadIdentity();				// Reset The View
+
+/*
+{
+	//tr.translate(camera_pos.x,camera_pos.y,camera_pos.z);
+
+GLfloat tr[16];
+GLfloat rot[16];
+//  glTranslatef2(-1.5f,0.0f,-12.0f,tr); glMultMatrixf(tr);
+  glRotatef2(cam_angle,0.0f,1.0f,0.0f,rot);		// Rotate The Pyramid On The Y axis
+glMultMatrixf(rot);
+}
+*/
+Matrix4 rot,tr,cm;
+GLfloat cm_ogl[16];
+cm.identity();
+
+Matrix4 wrot;
+wrot.rotateY(cam_angle);
+Vector3 camera_pos_w = wrot * camera_pos;
+tr.translate(camera_pos_w.x,camera_pos_w.y,camera_pos_w.z);
+if(camera_pos_0 != camera_pos)
+{
+camera_pos_0 = camera_pos;
+printf("cm tr:\n");
+printf("%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n",
+tr.m[0], tr.m[1], tr.m[2], tr.m[3],
+tr.m[4], tr.m[5], tr.m[6], tr.m[7],
+tr.m[8], tr.m[9], tr.m[10], tr.m[11],
+tr.m[12], tr.m[13], tr.m[14], tr.m[15]);
+char r;r=6;
+}
+
+rot.rotateY(cam_angle);
+if(cam_angle_0 != cam_angle)
+	cm.debug=1;
+cm=tr*rot;
+if(cam_angle_0 != cam_angle)
+{
+cam_angle_0 = cam_angle;
+printf("cm tra*rotate:\n");
+printf("%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n",
+cm.m[0], cm.m[1], cm.m[2], cm.m[3],
+cm.m[4], cm.m[5], cm.m[6], cm.m[7],
+cm.m[8], cm.m[9], cm.m[10], cm.m[11],
+cm.m[12], cm.m[13], cm.m[14], cm.m[15]);
+char r;r=6;
+}
+cm.invert();
+ToOpenGLMat(cm,cm_ogl);
+glLoadMatrixf(cm_ogl);
+
+DrawGrid();
+DrawAxis();
+
+glPushMatrix();
+
+  glTranslatef(-1.5f,0.0f,-12.0f);		// Move Left 1.5 Units And Into The Screen 6.0
+  glRotatef(rtri,0.0f,1.0f,0.0f);		// Rotate The Pyramid On The Y axis 
+	
+draw_pyramid();
+
+glPopMatrix();
+
+
+glPushMatrix();
+
+  glTranslatef(0.f,0.f,12.0f);		// Move Left 1.5 Units And Into The Screen 6.0
+  glRotatef(rtri,0.0f,1.0f,0.0f);		// Rotate The Pyramid On The Y axis 
+	
+blue_draw_pyramid();
+
+glPopMatrix();
+
+
+glPushMatrix();
+
+  glTranslatef(12.f,0.f,0.0f);		// Move Left 1.5 Units And Into The Screen 6.0
+  glRotatef(rtri,0.0f,1.0f,0.0f);		// Rotate The Pyramid On The Y axis 
+	
+red_draw_pyramid();
+
+glPopMatrix();
+
+
+glPushMatrix();
+
+  glTranslatef(-12.f,0.f,0.0f);		// Move Left 1.5 Units And Into The Screen 6.0
+  glRotatef(rtri,0.0f,1.0f,0.0f);		// Rotate The Pyramid On The Y axis 
+	
+green_draw_pyramid();
+
+glPopMatrix();
+
+glPushMatrix();
+
+  glTranslatef(1.5f,0.0f,-12.0f);		// Move Right 3 Units, and back into the screen 7
+  glRotatef(rquad,1.0f,1.0f,1.0f);		// Rotate The Cube On X, Y, and Z
+
+  draw_cube();
+glPopMatrix();
+
+  rtri+=1.0f;					// Increase The Rotation Variable For The Pyramid
+  rquad-=1.0f;					// Decrease The Rotation Variable For The Cube
+
+GLdouble view[16];
+glGetDoublev(GL_MODELVIEW_MATRIX, view);
+/*
+{
+printf("view:\n");
+printf("%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n",
+view[0], view[4], view[8], view[3],
+view[1], view[5], view[9], view[7],
+view[2], view[6], view[10], view[11],
+view[12], view[13], view[14], view[15]);
+
+}
+*/
+  // swap the buffers to display, since double buffering is used.
+  glutSwapBuffers();
+}
+
 int main(int argc, char **argv) 
 {  
   /* Initialize GLUT state - glut will take any command line arguments that pertain to it or 
@@ -227,13 +501,13 @@ int main(int argc, char **argv)
   window = glutCreateWindow("Jeff Molofee's GL Code Tutorial ... NeHe '99");  
 
   /* Register the function to do all our OpenGL drawing. */
-  glutDisplayFunc(&DrawGLScene);  
+  glutDisplayFunc(&update5);  
 
   /* Go fullscreen.  This is as soon as possible. */
   //glutFullScreen();
 
   /* Even if there are no events, redraw our gl scene. */
-  glutIdleFunc(&DrawGLScene);
+  glutIdleFunc(&update5);
 
   /* Register the function called when our window is resized. */
   glutReshapeFunc(&ReSizeGLScene);
@@ -269,21 +543,23 @@ void specialKeyPressed(int key, int x, int y)
 	break;
 
     case GLUT_KEY_UP: // walk forward (bob head)
-	++camera_pos.z;
+	camera_pos.z+=1.f;
 	break;
 
     case GLUT_KEY_DOWN: // walk back (bob head)
 	//if(camera_pos.z>0)
-		--camera_pos.z;
+	camera_pos.z-=1.f;
 	break;
 
     case GLUT_KEY_LEFT: // look left
 	yrot += 1.5f;
+cam_angle+= 1.5f;
 //	++g_lookat_x;
 	break;
     
     case GLUT_KEY_RIGHT: // look right
 	yrot -= 1.5f;
+cam_angle-= 1.5f;
 	//--g_lookat_x;
 	break;
 

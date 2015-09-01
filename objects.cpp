@@ -4,7 +4,8 @@
 #include <unistd.h>     // needed to sleep
 
 #include "objects.h"
-
+#include "utils.h"
+#include <stdio.h>
 
 void draw_pyramid()
 {
@@ -262,7 +263,7 @@ void green_draw_pyramid()
 }
 
 
-void DisplayGrid()
+void DrawGrid()
 {
 	glPushMatrix();
 	//	Set up some nice attributes for drawing the grid.
@@ -294,7 +295,7 @@ void DisplayGrid()
 glPopMatrix();
 }
 
-void DisplayAxis()
+void DrawAxis()
 {
 	glPushMatrix();
 	//	Set up some nice attributes for drawing the grid.
@@ -323,5 +324,85 @@ void DisplayAxis()
 	glPopAttrib();
 
 glPopMatrix();
+}
+
+
+Object::Object(void(*_draw)(), float _angle, Vector3 _displacement) :drawfunction(_draw), angle(_angle), displacement(_displacement)
+{
+}
+
+void Object::draw()
+{
+  glPushMatrix();
+
+  GLfloat oglm[16];
+  ToOpenGLMat(m, oglm);
+  glLoadMatrixf(oglm);
+
+{
+printf("m:\n");
+printf("%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n",
+m.m[0], m.m[1], m.m[2], m.m[3],
+m.m[4], m.m[5], m.m[6], m.m[7],
+m.m[8], m.m[9], m.m[10], m.m[11],
+m.m[12], m.m[13], m.m[14], m.m[15]);
+
+}
+
+  drawfunction();
+
+  for (list<Object*>::iterator it = children.begin(); it != children.end(); ++it)
+  {
+    (*it)->draw();
+  }
+
+  glPopMatrix();
+}
+
+void Object::update()
+{
+  m.identity();
+  m.rotateY(angle);
+{
+printf("fter rotation:\n");
+printf("%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n",
+m.m[0], m.m[1], m.m[2], m.m[3],
+m.m[4], m.m[5], m.m[6], m.m[7],
+m.m[8], m.m[9], m.m[10], m.m[11],
+m.m[12], m.m[13], m.m[14], m.m[15]);
+
+}
+  m.translate(displacement);
+{
+printf("after translation:\n");
+printf("%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n\
+%+.2f,%+.2f,%+.2f,%+.2f \n",
+m.m[0], m.m[1], m.m[2], m.m[3],
+m.m[4], m.m[5], m.m[6], m.m[7],
+m.m[8], m.m[9], m.m[10], m.m[11],
+m.m[12], m.m[13], m.m[14], m.m[15]);
+
+}
+}
+
+void Pyramid::update()
+{
+	angle += 1.f;
+	Object::update();
+}
+
+
+void Cube::update()
+{
+	angle += 1.5f;
+	Object::update();
 }
 

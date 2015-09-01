@@ -20,6 +20,7 @@
 #define MATH_MATRICES_H
 
 #include "Vectors.h"
+#include <stdio.h>
 
 ///////////////////////////////////////////////////////////////////////////
 // 2x2 matrix
@@ -208,7 +209,7 @@ private:
 public:
     float m[16];
     float tm[16];                                       // transpose m
-
+int debug;
 };
 
 
@@ -538,6 +539,7 @@ inline Matrix3& Matrix3::operator-=(const Matrix3& rhs)
 
 
 
+
 inline Vector3 Matrix3::operator*(const Vector3& rhs) const
 {
     return Vector3(m[0]*rhs.x + m[1]*rhs.y + m[2]*rhs.z,
@@ -636,6 +638,7 @@ inline Matrix4::Matrix4()
 {
     // initially identity matrix
     identity();
+debug=0;
 }
 
 
@@ -811,7 +814,13 @@ inline Vector3 Matrix4::operator*(const Vector3& rhs) const
 
 inline Matrix4 Matrix4::operator*(const Matrix4& n) const
 {
-    return Matrix4(m[0]*n[0]  + m[1]*n[4]  + m[2]*n[8]  + m[3]*n[12],   m[0]*n[1]  + m[1]*n[5]  + m[2]*n[9]  + m[3]*n[13],   m[0]*n[2]  + m[1]*n[6]  + m[2]*n[10]  + m[3]*n[14],   m[0]*n[3]  + m[1]*n[7]  + m[2]*n[11]  + m[3]*n[15],
+
+float dd= m[0]*n[3]  + m[1]*n[7]  + m[2]*n[11]  + m[3]*n[15];
+if(debug) 
+   printf("----- m[3]=%f ------\n",dd);
+    return Matrix4(m[0]*n[0]  + m[1]*n[4]  + m[2]*n[8]  + m[3]*n[12],
+   m[0]*n[1]  + m[1]*n[5]  + m[2]*n[9]  + m[3]*n[13],   m[0]*n[2]  + m[1]*n[6]  + m[2]*n[10]  + m[3]*n[14],  
+ m[0]*n[3]  + m[1]*n[7]  + m[2]*n[11]  + m[3]*n[15],
                    m[4]*n[0]  + m[5]*n[4]  + m[6]*n[8]  + m[7]*n[12],   m[4]*n[1]  + m[5]*n[5]  + m[6]*n[9]  + m[7]*n[13],   m[4]*n[2]  + m[5]*n[6]  + m[6]*n[10]  + m[7]*n[14],   m[4]*n[3]  + m[5]*n[7]  + m[6]*n[11]  + m[7]*n[15],
                    m[8]*n[0]  + m[9]*n[4]  + m[10]*n[8] + m[11]*n[12],  m[8]*n[1]  + m[9]*n[5]  + m[10]*n[9] + m[11]*n[13],  m[8]*n[2]  + m[9]*n[6]  + m[10]*n[10] + m[11]*n[14],  m[8]*n[3]  + m[9]*n[7]  + m[10]*n[11] + m[11]*n[15],
                    m[12]*n[0] + m[13]*n[4] + m[14]*n[8] + m[15]*n[12],  m[12]*n[1] + m[13]*n[5] + m[14]*n[9] + m[15]*n[13],  m[12]*n[2] + m[13]*n[6] + m[14]*n[10] + m[15]*n[14],  m[12]*n[3] + m[13]*n[7] + m[14]*n[11] + m[15]*n[15]);
