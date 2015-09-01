@@ -344,6 +344,8 @@ float cam_angle=0;
 Vector3 camera_pos_0;
 float cam_angle_0=0;
 
+Matrix4 cm;
+
 void update5()
 {
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);	// Clear The Screen And The Depth Buffer
@@ -360,48 +362,45 @@ GLfloat rot[16];
 glMultMatrixf(rot);
 }
 */
-Matrix4 rot,tr,cm;
+Matrix4 rot,tr;
 GLfloat cm_ogl[16];
-cm.identity();
 
-Matrix4 wrot;
-wrot.rotateY(cam_angle);
-Vector3 camera_pos_w = wrot * camera_pos;
-tr.translate(camera_pos_w.x,camera_pos_w.y,camera_pos_w.z);
-if(camera_pos_0 != camera_pos)
+if((cam_angle_0 != cam_angle) || (camera_pos_0 != camera_pos))
 {
 camera_pos_0 = camera_pos;
-printf("cm tr:\n");
-printf("%+.2f,%+.2f,%+.2f,%+.2f \n\
-%+.2f,%+.2f,%+.2f,%+.2f \n\
-%+.2f,%+.2f,%+.2f,%+.2f \n\
-%+.2f,%+.2f,%+.2f,%+.2f \n",
-tr.m[0], tr.m[1], tr.m[2], tr.m[3],
-tr.m[4], tr.m[5], tr.m[6], tr.m[7],
-tr.m[8], tr.m[9], tr.m[10], tr.m[11],
-tr.m[12], tr.m[13], tr.m[14], tr.m[15]);
-char r;r=6;
+	cam_angle_0 = cam_angle;
+}
+if(cam_angle || camera_pos.z)
+{
+	Matrix4 rot;
+rot.rotateY(90);
+	cm = cm * rot;
+	Vector3 camera_pos_w = cm * camera_pos;
+	cm.m[3] += camera_pos_w.x;
+	cm.m[7] += camera_pos_w.y;
+	cm.m[11] += camera_pos_w.z;
+
+printf("%+.2f,%+.2f,%+.2f, angle %+.2f\n",camera_pos_w.x,camera_pos_w.y,camera_pos_w.z, cam_angle);
+	{
+	printf("cm :\n");
+	printf("%+.2f,%+.2f,%+.2f,%+.2f, \n\
+	%+.2f,%+.2f,%+.2f,%+.2f, \n\
+	%+.2f,%+.2f,%+.2f,%+.2f, \n\
+	%+.2f,%+.2f,%+.2f,%+.2f \n",
+	cm.m[0], cm.m[1], cm.m[2], cm.m[3],
+	cm.m[4], cm.m[5], cm.m[6], cm.m[7],
+	cm.m[8], cm.m[9], cm.m[10], cm.m[11],
+	cm.m[12], cm.m[13], cm.m[14], cm.m[15]);
+	char r;r=6;
+	}
+
+cam_angle =0;
+camera_pos.z=0;
+	
+
+cm.invert();
 }
 
-rot.rotateY(cam_angle);
-if(cam_angle_0 != cam_angle)
-	cm.debug=1;
-cm=tr*rot;
-if(cam_angle_0 != cam_angle)
-{
-cam_angle_0 = cam_angle;
-printf("cm tra*rotate:\n");
-printf("%+.2f,%+.2f,%+.2f,%+.2f \n\
-%+.2f,%+.2f,%+.2f,%+.2f \n\
-%+.2f,%+.2f,%+.2f,%+.2f \n\
-%+.2f,%+.2f,%+.2f,%+.2f \n",
-cm.m[0], cm.m[1], cm.m[2], cm.m[3],
-cm.m[4], cm.m[5], cm.m[6], cm.m[7],
-cm.m[8], cm.m[9], cm.m[10], cm.m[11],
-cm.m[12], cm.m[13], cm.m[14], cm.m[15]);
-char r;r=6;
-}
-cm.invert();
 ToOpenGLMat(cm,cm_ogl);
 glLoadMatrixf(cm_ogl);
 
@@ -553,13 +552,13 @@ void specialKeyPressed(int key, int x, int y)
 
     case GLUT_KEY_LEFT: // look left
 	yrot += 1.5f;
-cam_angle+= 1.5f;
+cam_angle= 90.f;
 //	++g_lookat_x;
 	break;
     
     case GLUT_KEY_RIGHT: // look right
 	yrot -= 1.5f;
-cam_angle-= 1.5f;
+cam_angle= 90.f;
 	//--g_lookat_x;
 	break;
 
