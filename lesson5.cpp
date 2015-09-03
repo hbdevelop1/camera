@@ -36,6 +36,7 @@ float rquad = 0.0f;
 GLfloat yrot=0;            // y rotation
 
 
+void update7();
 
 void keyPressed(unsigned char key, int x, int y) ;
 void specialKeyPressed(int key, int x, int y) ;
@@ -340,9 +341,16 @@ view[12], view[13], view[14], view[15]);
   glutSwapBuffers();
 }
 
+Vector3 camdislocal;
+float camanglelocal_Y = 0.f;
+
+
+
 float cam_angle=0;
 Vector3 camera_pos_0;
 float cam_angle_0=0;
+
+//float cam_angle=180;
 
 Matrix4 cm;
 
@@ -477,6 +485,7 @@ view[12], view[13], view[14], view[15]);
   glutSwapBuffers();
 }
 
+
 int main(int argc, char **argv) 
 {  
   /* Initialize GLUT state - glut will take any command line arguments that pertain to it or 
@@ -500,13 +509,13 @@ int main(int argc, char **argv)
   window = glutCreateWindow("Jeff Molofee's GL Code Tutorial ... NeHe '99");  
 
   /* Register the function to do all our OpenGL drawing. */
-  glutDisplayFunc(&update5);  
+  glutDisplayFunc(&update7);  
 
   /* Go fullscreen.  This is as soon as possible. */
   //glutFullScreen();
 
   /* Even if there are no events, redraw our gl scene. */
-  glutIdleFunc(&update5);
+  glutIdleFunc(&update7);
 
   /* Register the function called when our window is resized. */
   glutReshapeFunc(&ReSizeGLScene);
@@ -542,24 +551,19 @@ void specialKeyPressed(int key, int x, int y)
 	break;
 
     case GLUT_KEY_UP: // walk forward (bob head)
-	camera_pos.z+=1.f;
+	camdislocal.z = 1.2f;
 	break;
 
     case GLUT_KEY_DOWN: // walk back (bob head)
-	//if(camera_pos.z>0)
-	camera_pos.z-=1.f;
+	camdislocal.z -= 1.2f;
 	break;
 
     case GLUT_KEY_LEFT: // look left
-	yrot += 1.5f;
-cam_angle= 90.f;
-//	++g_lookat_x;
+camanglelocal_Y += 1.2f;
 	break;
     
     case GLUT_KEY_RIGHT: // look right
-	yrot -= 1.5f;
-cam_angle= 90.f;
-	//--g_lookat_x;
+camanglelocal_Y -= 1.2f;
 	break;
 
     default:
