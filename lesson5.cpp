@@ -78,6 +78,8 @@ void ReSizeGLScene(int Width, int Height)
 
 Vector3 camera_pos;
 
+//#define _output_matrix_values_
+
 
 /* The main drawing function. */
 void DrawGLScene()
@@ -90,6 +92,7 @@ Matrix4 rot;
 
 //yrot+=1.f;
 rot.rotateY(yrot);
+#ifdef _output_matrix_values_
 {
 printf("cm rotate:\n");
 printf("%+.2f,%+.2f,%+.2f,%+.2f \n\
@@ -102,6 +105,7 @@ rot[8], rot[9], rot[10], rot[11],
 rot[12], rot[13], rot[14], rot[15]);
 
 }
+#endif
 
 camera_pos.y=1;
 Matrix4 tr;
@@ -109,6 +113,7 @@ tr.translate(camera_pos.x,camera_pos.y,camera_pos.z);
 
 Matrix4 rottr=rot * tr;
 
+#ifdef _output_matrix_values_
 {
 printf("rottr:\n");
 printf("%+.2f,%+.2f,%+.2f,%+.2f \n\
@@ -121,6 +126,8 @@ rottr[8], rottr[9], rottr[10], rottr[11],
 rottr[12], rottr[13], rottr[14], rottr[15]);
 
 }
+#endif
+
 rottr.invert();
 ToOpenGLMat(rottr,cm_ogl);
 
@@ -187,6 +194,7 @@ glPopMatrix();
 GLdouble view[16];
 glGetDoublev(GL_MODELVIEW_MATRIX, view);
 
+#ifdef _output_matrix_values_
 {
 printf("view:\n");
 printf("%+.2f,%+.2f,%+.2f,%+.2f \n\
@@ -199,6 +207,7 @@ view[2], view[6], view[10], view[11],
 view[12], view[13], view[14], view[15]);
 
 }
+#endif
 
   // swap the buffers to display, since double buffering is used.
   glutSwapBuffers();
@@ -267,12 +276,13 @@ ToOpenGLMat(cm,cm_ogl);
 
 glLoadMatrixf(cm_ogl);
 */
-GLfloat tr[16];
-GLfloat rot[16];
-  glTranslatef2(-1.5f,0.0f,-12.0f,tr);		// Move Left 1.5 Units And Into The Screen 6.0
-glMultMatrixf(tr);
-  glRotatef2(rtri,0.0f,1.0f,0.0f,rot);		// Rotate The Pyramid On The Y axis
-glMultMatrixf(rot);
+    GLfloat tr[16];
+    GLfloat rot[16];
+
+    glTranslatef2(-1.5f,0.0f,-12.0f,tr);		// Move Left 1.5 Units And Into The Screen 6.0
+    glMultMatrixf(tr);
+    glRotatef2(rtri,0.0f,1.0f,0.0f,rot);		// Rotate The Pyramid On The Y axis
+    glMultMatrixf(rot);
 //glRotatef(rtri,0.0f,1.0f,0.0f);		
 	
 draw_pyramid();
@@ -477,6 +487,9 @@ view[12], view[13], view[14], view[15]);
   glutSwapBuffers();
 }
 
+
+#include "fpscamera1.cpp"
+
 int main(int argc, char **argv) 
 {  
   /* Initialize GLUT state - glut will take any command line arguments that pertain to it or 
@@ -499,14 +512,20 @@ int main(int argc, char **argv)
   /* Open a window */  
   window = glutCreateWindow("Jeff Molofee's GL Code Tutorial ... NeHe '99");  
 
+void (*updatefunction)() = 
+            //&DrawGLScene
+            &fpscamera1
+            //&update5
+            ;
+
   /* Register the function to do all our OpenGL drawing. */
-  glutDisplayFunc(&update5);  
+  glutDisplayFunc(updatefunction);  
 
   /* Go fullscreen.  This is as soon as possible. */
   //glutFullScreen();
 
   /* Even if there are no events, redraw our gl scene. */
-  glutIdleFunc(&update5);
+  glutIdleFunc(updatefunction);
 
   /* Register the function called when our window is resized. */
   glutReshapeFunc(&ReSizeGLScene);
@@ -542,12 +561,12 @@ void specialKeyPressed(int key, int x, int y)
 	break;
 
     case GLUT_KEY_UP: // walk forward (bob head)
-	camera_pos.z+=1.f;
+	camera_pos.z-=1.f;
 	break;
 
     case GLUT_KEY_DOWN: // walk back (bob head)
 	//if(camera_pos.z>0)
-	camera_pos.z-=1.f;
+	camera_pos.z+=1.f;
 	break;
 
     case GLUT_KEY_LEFT: // look left
